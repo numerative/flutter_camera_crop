@@ -81,7 +81,20 @@ class TakePictureScreenState extends State<TakePictureScreen> {
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.done) {
             // If the Future is complete, display the preview.
-            return CameraPreview(_controller);
+            return Stack(
+              children: <Widget>[
+                CameraPreview(_controller),
+                Positioned(
+                  top: MediaQuery.of(context).size.height / 4 - 20,
+                  child: Container(
+                    height: MediaQuery.of(context).size.height / 3,
+                    width: MediaQuery.of(context).size.width,
+                    decoration: BoxDecoration(
+                        border: Border.all(color: Colors.red, width: 4)),
+                  ),
+                ),
+              ],
+            );
           } else {
             // Otherwise, display a loading indicator.
             return Center(child: CircularProgressIndicator());
@@ -126,15 +139,16 @@ class TakePictureScreenState extends State<TakePictureScreen> {
       ),
     );
   }
+
   Future<String> _resizePhoto(String filePath) async {
     ImageProperties properties =
-    await FlutterNativeImage.getImageProperties(filePath);
+        await FlutterNativeImage.getImageProperties(filePath);
 
-    int width = properties.width;
-    var offset = (properties.height - properties.width) / 2;
+    int width = properties.height;
+    var offset = (properties.width).abs() / 4;
 
     File croppedFile = await FlutterNativeImage.cropImage(
-        filePath, 0, offset.round(), width, width);
+        filePath, offset.round(), 0, (width/2).round(), width);
 
     return croppedFile.path;
   }
@@ -155,6 +169,4 @@ class DisplayPictureScreen extends StatelessWidget {
       body: Image.file(File(imagePath)),
     );
   }
-
-
 }
